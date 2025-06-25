@@ -2,14 +2,10 @@ const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
 const userSchema = new mongoose.Schema({
-  user_id: {
+  id: {
     type: String,
     default: uuidv4,
     unique: true,
-  },
-  name: {
-    type: String,
-    required: true,
   },
   email: {
     type: String,
@@ -21,6 +17,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  first_name: {
+    type: String,
+    required: true,
+  },
+  last_name: {
+    type: String,
+    required: true,
+  },
   tenant_id: {
     type: String,
     required: true,
@@ -29,10 +33,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  tenant_region_url: {
-    type: String,
-    required: false,
+  roles: {
+    type: [String],
+    default: [],
   },
-}, { timestamps: true });
+  active: {
+    type: Boolean,
+    default: true,
+  },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 module.exports = mongoose.model('User', userSchema); 
