@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const tenantRoutes = require('./routes/tenants');
 const organizationRoutes = require('./routes/organizations');
 const usersRoutes = require('./routes/users');
+const rolesRoutes = require('./routes/roles');
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/tenants', tenantRoutes);
 app.use('/api/v1/tenants/:tenant_id/organizations', organizationRoutes);
 app.use('/api/v1/tenants/:tenant_id/users', usersRoutes);
+app.use('/api/v1/tenants/:tenant_id/roles', rolesRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
