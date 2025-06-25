@@ -91,9 +91,121 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/v1/tenants/:tenant_id/privileges/:id
-router.get('/:id', async (req, res) => { res.status(501).json({ message: 'Not implemented' }); });
+router.get('/:id', async (req, res) => {
+  const trace_id = uuidv4();
+  try {
+    const { tenant_id, id } = req.params;
+    if (!tenant_id || !id) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'BadRequest',
+          message: 'tenant_id and id are required in path',
+          details: {}
+        },
+        trace_id
+      });
+    }
+    const privilege = await Privilege.findOne({ tenant_id, id });
+    if (!privilege) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NotFound',
+          message: 'Privilege not found',
+          details: {}
+        },
+        trace_id
+      });
+    }
+    res.json({
+      success: true,
+      data: {
+        name: privilege.name,
+        description: privilege.description,
+        active: privilege.active,
+        resource: privilege.resource,
+        id: privilege.id,
+        tenant_id: privilege.tenant_id,
+        created_at: privilege.created_at,
+        updated_at: privilege.updated_at
+      },
+      message: 'Privilege fetched successfully',
+      trace_id
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'InternalServerError',
+        message: 'Internal server error',
+        details: {}
+      },
+      trace_id
+    });
+  }
+});
 
 // PUT /api/v1/tenants/:tenant_id/privileges/:id
-router.put('/:id', async (req, res) => { res.status(501).json({ message: 'Not implemented' }); });
+router.put('/:id', async (req, res) => {
+  const trace_id = uuidv4();
+  try {
+    const { tenant_id, id } = req.params;
+    const { name, description, resource, active } = req.body;
+    if (!tenant_id || !id) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'BadRequest',
+          message: 'tenant_id and id are required in path',
+          details: {}
+        },
+        trace_id
+      });
+    }
+    const update = { name, description, resource, active };
+    const privilege = await Privilege.findOneAndUpdate(
+      { tenant_id, id },
+      update,
+      { new: true }
+    );
+    if (!privilege) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NotFound',
+          message: 'Privilege not found',
+          details: {}
+        },
+        trace_id
+      });
+    }
+    res.json({
+      success: true,
+      data: {
+        name: privilege.name,
+        description: privilege.description,
+        active: privilege.active,
+        resource: privilege.resource,
+        id: privilege.id,
+        tenant_id: privilege.tenant_id,
+        created_at: privilege.created_at,
+        updated_at: privilege.updated_at
+      },
+      message: 'Privilege updated successfully',
+      trace_id
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'InternalServerError',
+        message: 'Internal server error',
+        details: {}
+      },
+      trace_id
+    });
+  }
+});
 
 module.exports = router; 
