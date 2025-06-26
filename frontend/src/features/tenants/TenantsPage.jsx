@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchTenants,
-  createTenant,
-  updateTenantStart, updateTenantSuccess, updateTenantFailure,
-  deleteTenantStart, deleteTenantSuccess, deleteTenantFailure
+  createTenant
 } from '../../store/slices/tenantsSlice';
 import { useForm } from 'react-hook-form';
 
@@ -44,22 +42,8 @@ const TenantsPage = () => {
 
   const onSubmit = async (data) => {
     if (editTenant) {
-      dispatch(updateTenantStart());
-      dispatch(updateTenant(editTenant.id, data))
-        .then((res) => {
-          if (res.success) {
-            dispatch(updateTenantSuccess(res.data));
-            setToast('Tenant updated!');
-            setEditTenant(null);
-          } else {
-            dispatch(updateTenantFailure(res.error));
-            setToast(res.error || 'Update failed');
-          }
-        })
-        .catch(() => {
-          dispatch(updateTenantFailure('Update failed'));
-          setToast('Update failed');
-        });
+      setToast('Update not implemented');
+      setEditTenant(null);
     } else {
       try {
         await dispatch(createTenant(data)).unwrap();
@@ -74,24 +58,8 @@ const TenantsPage = () => {
   const handleEdit = (tenant) => setEditTenant(tenant);
   const handleDelete = (tenant) => setShowDelete(tenant);
   const confirmDelete = () => {
-    if (!showDelete) return;
-    dispatch(deleteTenantStart());
-    dispatch(deleteTenant(showDelete.id))
-      .then((res) => {
-        if (res.success) {
-          dispatch(deleteTenantSuccess(res.data));
-          setToast('Tenant deleted!');
-        } else {
-          dispatch(deleteTenantFailure(res.error));
-          setToast(res.error || 'Delete failed');
-        }
-        setShowDelete(null);
-      })
-      .catch(() => {
-        dispatch(deleteTenantFailure('Delete failed'));
-        setToast('Delete failed');
-        setShowDelete(null);
-      });
+    setToast('Delete not implemented');
+    setShowDelete(null);
   };
 
   return (

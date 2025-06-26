@@ -9,6 +9,13 @@ export const login = createAsyncThunk(
       const { data } = response.data;
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem('user', JSON.stringify({
+        id: data.user_id,
+        email: data.email,
+        name: data.name,
+        tenant_id: data.tenant_id,
+        organization_id: data.organization_id,
+      }));
       return data;
     } catch (error) {
       return rejectWithValue(
@@ -18,12 +25,12 @@ export const login = createAsyncThunk(
   }
 );
 
-const persistedUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(sessionStorage.getItem('user'));
-const persistedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+const persistedUser = JSON.parse(localStorage.getItem('user')) || null;
+const persistedToken = localStorage.getItem('access_token') || null;
 
 const initialState = {
-  user: persistedUser || null,
-  token: persistedToken || null,
+  user: persistedUser,
+  token: persistedToken,
   loading: false,
   error: null,
   isAuthenticated: !!persistedToken,
@@ -41,7 +48,6 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       localStorage.removeItem('user');
-      localStorage.removeItem('token');
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
     },

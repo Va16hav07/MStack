@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchLegalEntities, createLegalEntity, updateLegalEntity } from '../../store/slices/legalEntitiesSlice';
+import { fetchLegalEntities, createLegalEntity, updateLegalEntity, deleteLegalEntity } from '../../store/slices/legalEntitiesSlice';
 import { useForm } from 'react-hook-form';
 
 const LegalEntitiesPage = () => {
@@ -9,10 +9,14 @@ const LegalEntitiesPage = () => {
   const [editEntity, setEditEntity] = useState(null);
   const [toast, setToast] = useState(null);
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const { user } = useSelector(state => state.auth);
+
+  // Use default tenant ID if no user is logged in
+  const tenantId = user?.tenant_id || 'a891264e-450c-41ac-ad72-7fe11fedd092';
 
   useEffect(() => {
-    dispatch(fetchLegalEntities());
-  }, [dispatch]);
+    dispatch(fetchLegalEntities(tenantId));
+  }, [dispatch, tenantId]);
 
   useEffect(() => {
     if (toast) {
@@ -41,11 +45,11 @@ const LegalEntitiesPage = () => {
   const onSubmit = async (data) => {
     try {
       if (editEntity) {
-        await dispatch(updateLegalEntity({ id: editEntity.id, data })).unwrap();
+        await dispatch(updateLegalEntity({ tenantId: tenantId, id: editEntity.id, data })).unwrap();
         setToast('Legal entity updated!');
         setEditEntity(null);
       } else {
-        await dispatch(createLegalEntity(data)).unwrap();
+        await dispatch(createLegalEntity({ tenantId: tenantId, data })).unwrap();
         setToast('Legal entity created!');
         reset();
       }
@@ -55,7 +59,16 @@ const LegalEntitiesPage = () => {
   };
 
   const handleEdit = (entity) => setEditEntity(entity);
-  // Delete logic can be added if you have a deleteLegalEntity thunk
+  const handleDelete = async (entity) => {
+    if (window.confirm('Delete this legal entity?')) {
+      try {
+        await dispatch(deleteLegalEntity({ tenantId: tenantId, id: entity.id })).unwrap();
+        setToast('Legal entity deleted!');
+      } catch (err) {
+        setToast(err || 'Delete failed');
+      }
+    }
+  };
 
   return (
     <div className="legal-entities-page">
@@ -68,6 +81,7 @@ const LegalEntitiesPage = () => {
           <li key={entity.id}>
             {entity.name} ({entity.legal_name})
             <button onClick={() => handleEdit(entity)} style={{marginLeft: 8}}>Edit</button>
+            <button onClick={() => handleDelete(entity)} style={{marginLeft: 4, color: 'red'}}>Delete</button>
           </li>
         ))}
       </ul>

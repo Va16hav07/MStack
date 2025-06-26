@@ -11,11 +11,12 @@ const PrivilegesPage = () => {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
   const { user } = useSelector(state => state.auth);
 
+  // Use default tenant ID if no user is logged in
+  const tenantId = user?.tenant_id || 'a891264e-450c-41ac-ad72-7fe11fedd092';
+
   useEffect(() => {
-    if (user?.tenant_id) {
-      dispatch(fetchPrivileges(user.tenant_id));
-    }
-  }, [dispatch, user]);
+    dispatch(fetchPrivileges(tenantId));
+  }, [dispatch, tenantId]);
 
   useEffect(() => {
     if (toast) {
@@ -37,11 +38,11 @@ const PrivilegesPage = () => {
   const onSubmit = async (data) => {
     try {
       if (editPriv) {
-        await dispatch(updatePrivilege({ id: editPriv.id, data })).unwrap();
+        await dispatch(updatePrivilege({ tenantId: tenantId, id: editPriv.id, data })).unwrap();
         setToast('Privilege updated!');
         setEditPriv(null);
       } else {
-        await dispatch(createPrivilege(data)).unwrap();
+        await dispatch(createPrivilege({ tenantId: tenantId, data })).unwrap();
         setToast('Privilege created!');
         reset();
       }

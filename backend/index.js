@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cors());
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mstack';
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,

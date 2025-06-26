@@ -51,22 +51,34 @@ export const usersAPI = {
 
 export const rolesAPI = {
   getAll: (tenantId) => api.get(`/tenants/${tenantId}/roles`),
-  // add other methods as needed
+  getById: (tenantId, id) => api.get(`/tenants/${tenantId}/roles/${id}`),
+  create: (tenantId, data) => api.post(`/tenants/${tenantId}/roles`, data),
+  update: (tenantId, id, data) => api.put(`/tenants/${tenantId}/roles/${id}`, data),
+  delete: (tenantId, id) => api.delete(`/tenants/${tenantId}/roles/${id}`),
 };
 
 export const privilegesAPI = {
   getAll: (tenantId) => api.get(`/tenants/${tenantId}/privileges`),
-  // add other methods as needed
+  getById: (tenantId, id) => api.get(`/tenants/${tenantId}/privileges/${id}`),
+  create: (tenantId, data) => api.post(`/tenants/${tenantId}/privileges`, data),
+  update: (tenantId, id, data) => api.put(`/tenants/${tenantId}/privileges/${id}`, data),
+  delete: (tenantId, id) => api.delete(`/tenants/${tenantId}/privileges/${id}`),
 };
 
 export const legalEntitiesAPI = {
   getAll: (tenantId) => api.get(`/tenants/${tenantId}/legal-entities`),
-  // add other methods as needed
+  getById: (tenantId, id) => api.get(`/tenants/${tenantId}/legal-entities/${id}`),
+  create: (tenantId, data) => api.post(`/tenants/${tenantId}/legal-entities`, data),
+  update: (tenantId, id, data) => api.put(`/tenants/${tenantId}/legal-entities/${id}`, data),
+  delete: (tenantId, id) => api.delete(`/tenants/${tenantId}/legal-entities/${id}`),
 };
 
 export const organizationsAPI = {
   getAll: (tenantId) => api.get(`/tenants/${tenantId}/organizations`),
-  // add other methods as needed
+  getById: (tenantId, id) => api.get(`/tenants/${tenantId}/organizations/${id}`),
+  create: (tenantId, data) => api.post(`/tenants/${tenantId}/organizations`, data),
+  update: (tenantId, id, data) => api.put(`/tenants/${tenantId}/organizations/${id}`, data),
+  delete: (tenantId, id) => api.delete(`/tenants/${tenantId}/organizations/${id}`),
 };
 
 export default api; 

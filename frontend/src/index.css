@@ -59,4 +59,81 @@ body {
 .error {
   color: red;
   margin-top: 1rem;
+}
+
+/* Page component styles */
+.organizations-page,
+.roles-page,
+.privileges-page,
+.legal-entities-page {
+  padding: 2rem;
+  background: #fff;
+  min-height: 100vh;
+}
+
+.organizations-page h2,
+.roles-page h2,
+.privileges-page h2,
+.legal-entities-page h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.organizations-page ul,
+.roles-page ul,
+.privileges-page ul,
+.legal-entities-page ul {
+  list-style: none;
+  padding: 0;
+}
+
+.organizations-page li,
+.roles-page li,
+.privileges-page li,
+.legal-entities-page li {
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.organizations-page form,
+.roles-page form,
+.privileges-page form,
+.legal-entities-page form {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.organizations-page input,
+.roles-page input,
+.privileges-page input,
+.legal-entities-page input {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: #4CAF50;
+  color: white;
+  padding: 1rem;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.skeleton {
+  padding: 1rem;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin: 1rem 0;
 } 

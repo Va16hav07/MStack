@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchRoles, createRole, updateRole } from '../../store/slices/rolesSlice';
+import { fetchRoles, createRole, updateRole, deleteRole } from '../../store/slices/rolesSlice';
 import { useForm } from 'react-hook-form';
 
 const RolesPage = () => {
@@ -11,11 +11,12 @@ const RolesPage = () => {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
   const { user } = useSelector(state => state.auth);
 
+  // Use default tenant ID if no user is logged in
+  const tenantId = user?.tenant_id || 'a891264e-450c-41ac-ad72-7fe11fedd092';
+
   useEffect(() => {
-    if (user?.tenant_id) {
-      dispatch(fetchRoles(user.tenant_id));
-    }
-  }, [dispatch, user]);
+    dispatch(fetchRoles(tenantId));
+  }, [dispatch, tenantId]);
 
   useEffect(() => {
     if (toast) {
@@ -36,11 +37,11 @@ const RolesPage = () => {
   const onSubmit = async (data) => {
     try {
       if (editRole) {
-        await dispatch(updateRole({ id: editRole.id, data })).unwrap();
+        await dispatch(updateRole({ tenantId: tenantId, id: editRole.id, data })).unwrap();
         setToast('Role updated!');
         setEditRole(null);
       } else {
-        await dispatch(createRole(data)).unwrap();
+        await dispatch(createRole({ tenantId: tenantId, data })).unwrap();
         setToast('Role created!');
         reset();
       }
@@ -50,7 +51,16 @@ const RolesPage = () => {
   };
 
   const handleEdit = (role) => setEditRole(role);
-  // Delete logic can be added if you have a deleteRole thunk
+  const handleDelete = async (role) => {
+    if (window.confirm('Delete this role?')) {
+      try {
+        await dispatch(deleteRole({ tenantId: tenantId, id: role.id })).unwrap();
+        setToast('Role deleted!');
+      } catch (err) {
+        setToast(err || 'Delete failed');
+      }
+    }
+  };
 
   return (
     <div className="roles-page">
@@ -63,6 +73,7 @@ const RolesPage = () => {
           <li key={role.id}>
             {role.name} ({role.description})
             <button onClick={() => handleEdit(role)} style={{marginLeft: 8}}>Edit</button>
+            <button onClick={() => handleDelete(role)} style={{marginLeft: 4, color: 'red'}}>Delete</button>
           </li>
         ))}
       </ul>

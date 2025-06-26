@@ -48,7 +48,7 @@ export const assignRoles = createAsyncThunk(
   'users/assignRoles',
   async ({ tenantId, userId, roleIds }, { rejectWithValue }) => {
     try {
-      const response = await usersAPI.assignRoles(tenantId, userId, { role_ids: roleIds });
+      await usersAPI.assignRoles(tenantId, userId, { role_ids: roleIds });
       return { userId, roleIds };
     } catch (error) {
       return rejectWithValue(

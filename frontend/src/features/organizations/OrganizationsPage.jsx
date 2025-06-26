@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrganizations, createOrganization, updateOrganization } from '../../store/slices/organizationsSlice';
+import { fetchOrganizations, createOrganization, updateOrganization, deleteOrganization } from '../../store/slices/organizationsSlice';
 import { useForm } from 'react-hook-form';
 
 const OrganizationsPage = () => {
@@ -11,11 +11,19 @@ const OrganizationsPage = () => {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
   const { user } = useSelector(state => state.auth);
 
+  // Use default tenant ID if no user is logged in
+  const tenantId = user?.tenant_id || 'a891264e-450c-41ac-ad72-7fe11fedd092';
+
+  // Debug logging
+  console.log('OrganizationsPage - organizations:', organizations);
+  console.log('OrganizationsPage - loading:', loading);
+  console.log('OrganizationsPage - error:', error);
+  console.log('OrganizationsPage - tenantId:', tenantId);
+
   useEffect(() => {
-    if (user?.tenant_id) {
-      dispatch(fetchOrganizations(user.tenant_id));
-    }
-  }, [dispatch, user]);
+    console.log('OrganizationsPage - useEffect triggered, dispatching fetchOrganizations');
+    dispatch(fetchOrganizations(tenantId));
+  }, [dispatch, tenantId]);
 
   useEffect(() => {
     if (toast) {
@@ -42,11 +50,11 @@ const OrganizationsPage = () => {
   const onSubmit = async (data) => {
     try {
       if (editOrg) {
-        await dispatch(updateOrganization({ id: editOrg.id, data })).unwrap();
+        await dispatch(updateOrganization({ tenantId: tenantId, id: editOrg.id, data })).unwrap();
         setToast('Organization updated!');
         setEditOrg(null);
       } else {
-        await dispatch(createOrganization(data)).unwrap();
+        await dispatch(createOrganization({ tenantId: tenantId, data })).unwrap();
         setToast('Organization created!');
         reset();
       }
@@ -56,7 +64,16 @@ const OrganizationsPage = () => {
   };
 
   const handleEdit = (org) => setEditOrg(org);
-  // Delete logic can be added if you have a deleteOrganization thunk
+  const handleDelete = async (org) => {
+    if (window.confirm('Delete this organization?')) {
+      try {
+        await dispatch(deleteOrganization({ tenantId: tenantId, id: org.id })).unwrap();
+        setToast('Organization deleted!');
+      } catch (err) {
+        setToast(err || 'Delete failed');
+      }
+    }
+  };
 
   return (
     <div className="organizations-page">
@@ -69,6 +86,7 @@ const OrganizationsPage = () => {
           <li key={org.id}>
             {org.name} ({org.email})
             <button onClick={() => handleEdit(org)} style={{marginLeft: 8}}>Edit</button>
+            <button onClick={() => handleDelete(org)} style={{marginLeft: 4, color: 'red'}}>Delete</button>
           </li>
         ))}
       </ul>
