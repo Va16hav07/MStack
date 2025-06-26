@@ -1,4 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { organizationsAPI } from '../../api';
+
+// Async thunk for fetching organizations
+export const fetchOrganizations = createAsyncThunk(
+  'organizations/fetchOrganizations',
+  async (tenantId, { rejectWithValue }) => {
+    try {
+      const response = await organizationsAPI.getAll(tenantId);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch organizations'
+      );
+    }
+  }
+);
 
 const initialState = {
   organizations: [],
@@ -60,6 +76,21 @@ const organizationsSlice = createSlice({
       state.error = action.payload;
     },
     // Add more CRUD reducers as needed
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchOrganizations.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrganizations.fulfilled, (state, action) => {
+        state.loading = false;
+        state.organizations = action.payload;
+      })
+      .addCase(fetchOrganizations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

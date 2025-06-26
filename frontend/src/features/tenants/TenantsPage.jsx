@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  fetchTenantsStart, fetchTenantsSuccess, fetchTenantsFailure,
-  createTenantStart, createTenantSuccess, createTenantFailure,
+  fetchTenants,
+  createTenant,
   updateTenantStart, updateTenantSuccess, updateTenantFailure,
   deleteTenantStart, deleteTenantSuccess, deleteTenantFailure
 } from '../../store/slices/tenantsSlice';
-import { getTenants, createTenant, updateTenant, deleteTenant } from '../../api/mockApi';
 import { useForm } from 'react-hook-form';
 
 const TenantsPage = () => {
@@ -18,10 +17,7 @@ const TenantsPage = () => {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
   useEffect(() => {
-    dispatch(fetchTenantsStart());
-    getTenants()
-      .then((res) => dispatch(fetchTenantsSuccess(res.data)))
-      .catch(() => dispatch(fetchTenantsFailure('Failed to load tenants')));
+    dispatch(fetchTenants());
   }, [dispatch]);
 
   useEffect(() => {
@@ -49,7 +45,7 @@ const TenantsPage = () => {
   const onSubmit = async (data) => {
     if (editTenant) {
       dispatch(updateTenantStart());
-      updateTenant(editTenant.id, data)
+      dispatch(updateTenant(editTenant.id, data))
         .then((res) => {
           if (res.success) {
             dispatch(updateTenantSuccess(res.data));
@@ -65,22 +61,13 @@ const TenantsPage = () => {
           setToast('Update failed');
         });
     } else {
-      dispatch(createTenantStart());
-      createTenant(data)
-        .then((res) => {
-          if (res.success) {
-            dispatch(createTenantSuccess(res.data));
-            setToast('Tenant created!');
-            reset();
-          } else {
-            dispatch(createTenantFailure(res.error));
-            setToast(res.error || 'Create failed');
-          }
-        })
-        .catch(() => {
-          dispatch(createTenantFailure('Create failed'));
-          setToast('Create failed');
-        });
+      try {
+        await dispatch(createTenant(data)).unwrap();
+        setToast('Tenant created!');
+        reset();
+      } catch (err) {
+        setToast(err || 'Create failed');
+      }
     }
   };
 
@@ -89,7 +76,7 @@ const TenantsPage = () => {
   const confirmDelete = () => {
     if (!showDelete) return;
     dispatch(deleteTenantStart());
-    deleteTenant(showDelete.id)
+    dispatch(deleteTenant(showDelete.id))
       .then((res) => {
         if (res.success) {
           dispatch(deleteTenantSuccess(res.data));

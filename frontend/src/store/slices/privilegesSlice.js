@@ -1,4 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api, { privilegesAPI } from '../../api';
+
+// Async thunk for fetching privileges
+export const fetchPrivileges = createAsyncThunk(
+  'privileges/fetchPrivileges',
+  async (tenantId, { rejectWithValue }) => {
+    try {
+      const response = await privilegesAPI.getAll(tenantId);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch privileges'
+      );
+    }
+  }
+);
 
 const initialState = {
   privileges: [],
@@ -60,6 +76,21 @@ const privilegesSlice = createSlice({
       state.error = action.payload;
     },
     // Add more CRUD reducers as needed
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchPrivileges.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPrivileges.fulfilled, (state, action) => {
+        state.loading = false;
+        state.privileges = action.payload;
+      })
+      .addCase(fetchPrivileges.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

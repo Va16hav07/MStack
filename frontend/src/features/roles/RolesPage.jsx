@@ -1,28 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  fetchRolesStart, fetchRolesSuccess, fetchRolesFailure,
-  createRoleStart, createRoleSuccess, createRoleFailure,
-  updateRoleStart, updateRoleSuccess, updateRoleFailure,
-  deleteRoleStart, deleteRoleSuccess, deleteRoleFailure
-} from '../../store/slices/rolesSlice';
-import { getRoles, createRole, updateRole, deleteRole } from '../../api/mockApi';
+import { fetchRoles, createRole, updateRole } from '../../store/slices/rolesSlice';
 import { useForm } from 'react-hook-form';
 
 const RolesPage = () => {
   const dispatch = useDispatch();
   const { roles, loading, error } = useSelector((state) => state.roles);
   const [editRole, setEditRole] = useState(null);
-  const [showDelete, setShowDelete] = useState(null);
   const [toast, setToast] = useState(null);
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const { user } = useSelector(state => state.auth);
 
   useEffect(() => {
-    dispatch(fetchRolesStart());
-    getRoles()
-      .then((res) => dispatch(fetchRolesSuccess(res.data)))
-      .catch(() => dispatch(fetchRolesFailure('Failed to load roles')));
-  }, [dispatch]);
+    if (user?.tenant_id) {
+      dispatch(fetchRoles(user.tenant_id));
+    }
+  }, [dispatch, user]);
 
   useEffect(() => {
     if (toast) {
@@ -41,65 +34,23 @@ const RolesPage = () => {
   }, [editRole, setValue, reset]);
 
   const onSubmit = async (data) => {
-    if (editRole) {
-      dispatch(updateRoleStart());
-      updateRole(editRole.id, data)
-        .then((res) => {
-          if (res.success) {
-            dispatch(updateRoleSuccess(res.data));
-            setToast('Role updated!');
-            setEditRole(null);
-          } else {
-            dispatch(updateRoleFailure(res.error));
-            setToast(res.error || 'Update failed');
-          }
-        })
-        .catch(() => {
-          dispatch(updateRoleFailure('Update failed'));
-          setToast('Update failed');
-        });
-    } else {
-      dispatch(createRoleStart());
-      createRole(data)
-        .then((res) => {
-          if (res.success) {
-            dispatch(createRoleSuccess(res.data));
-            setToast('Role created!');
-            reset();
-          } else {
-            dispatch(createRoleFailure(res.error));
-            setToast(res.error || 'Create failed');
-          }
-        })
-        .catch(() => {
-          dispatch(createRoleFailure('Create failed'));
-          setToast('Create failed');
-        });
+    try {
+      if (editRole) {
+        await dispatch(updateRole({ id: editRole.id, data })).unwrap();
+        setToast('Role updated!');
+        setEditRole(null);
+      } else {
+        await dispatch(createRole(data)).unwrap();
+        setToast('Role created!');
+        reset();
+      }
+    } catch (err) {
+      setToast(err || 'Operation failed');
     }
   };
 
   const handleEdit = (role) => setEditRole(role);
-  const handleDelete = (role) => setShowDelete(role);
-  const confirmDelete = () => {
-    if (!showDelete) return;
-    dispatch(deleteRoleStart());
-    deleteRole(showDelete.id)
-      .then((res) => {
-        if (res.success) {
-          dispatch(deleteRoleSuccess(res.data));
-          setToast('Role deleted!');
-        } else {
-          dispatch(deleteRoleFailure(res.error));
-          setToast(res.error || 'Delete failed');
-        }
-        setShowDelete(null);
-      })
-      .catch(() => {
-        dispatch(deleteRoleFailure('Delete failed'));
-        setToast('Delete failed');
-        setShowDelete(null);
-      });
-  };
+  // Delete logic can be added if you have a deleteRole thunk
 
   return (
     <div className="roles-page">
@@ -112,7 +63,6 @@ const RolesPage = () => {
           <li key={role.id}>
             {role.name} ({role.description})
             <button onClick={() => handleEdit(role)} style={{marginLeft: 8}}>Edit</button>
-            <button onClick={() => handleDelete(role)} style={{marginLeft: 4, color: 'red'}}>Delete</button>
           </li>
         ))}
       </ul>
@@ -126,15 +76,6 @@ const RolesPage = () => {
         </button>
         {editRole && <button type="button" onClick={() => setEditRole(null)} style={{marginLeft: 4}}>Cancel</button>}
       </form>
-      {showDelete && (
-        <div className="modal">
-          <div className="modal-content">
-            <p>Are you sure you want to delete {showDelete.name}?</p>
-            <button onClick={confirmDelete} style={{color: 'red'}}>Delete</button>
-            <button onClick={() => setShowDelete(null)} style={{marginLeft: 4}}>Cancel</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

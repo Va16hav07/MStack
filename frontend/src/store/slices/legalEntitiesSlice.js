@@ -1,4 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { legalEntitiesAPI } from '../../api';
+
+// Async thunk for fetching legal entities
+export const fetchLegalEntities = createAsyncThunk(
+  'legalEntities/fetchLegalEntities',
+  async (tenantId, { rejectWithValue }) => {
+    try {
+      const response = await legalEntitiesAPI.getAll(tenantId);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch legal entities'
+      );
+    }
+  }
+);
 
 const initialState = {
   legalEntities: [],
@@ -60,6 +76,21 @@ const legalEntitiesSlice = createSlice({
       state.error = action.payload;
     },
     // Add more CRUD reducers as needed
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchLegalEntities.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLegalEntities.fulfilled, (state, action) => {
+        state.loading = false;
+        state.legalEntities = action.payload;
+      })
+      .addCase(fetchLegalEntities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

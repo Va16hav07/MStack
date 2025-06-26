@@ -1,10 +1,41 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { tenantsAPI } from '../../api';
 
 const initialState = {
   tenants: [],
   loading: false,
   error: null,
 };
+
+// Async thunk for fetching tenants
+export const fetchTenants = createAsyncThunk(
+  'tenants/fetchTenants',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await tenantsAPI.getAll();
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch tenants'
+      );
+    }
+  }
+);
+
+// Async thunk for creating a tenant
+export const createTenant = createAsyncThunk(
+  'tenants/createTenant',
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await tenantsAPI.create(data);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to create tenant'
+      );
+    }
+  }
+);
 
 const tenantsSlice = createSlice({
   name: 'tenants',
@@ -59,6 +90,33 @@ const tenantsSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTenants.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTenants.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tenants = action.payload;
+      })
+      .addCase(fetchTenants.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(createTenant.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createTenant.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tenants.push(action.payload);
+      })
+      .addCase(createTenant.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

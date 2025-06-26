@@ -1,4 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { rolesAPI } from '../../api';
+
+// Async thunk for fetching roles
+export const fetchRoles = createAsyncThunk(
+  'roles/fetchRoles',
+  async (tenantId, { rejectWithValue }) => {
+    try {
+      const response = await rolesAPI.getAll(tenantId);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch roles'
+      );
+    }
+  }
+);
 
 const initialState = {
   roles: [],
@@ -60,6 +76,21 @@ const rolesSlice = createSlice({
       state.error = action.payload;
     },
     // Add more CRUD reducers as needed
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchRoles.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchRoles.fulfilled, (state, action) => {
+        state.loading = false;
+        state.roles = action.payload;
+      })
+      .addCase(fetchRoles.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

@@ -1,28 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  fetchOrganizationsStart, fetchOrganizationsSuccess, fetchOrganizationsFailure,
-  createOrganizationStart, createOrganizationSuccess, createOrganizationFailure,
-  updateOrganizationStart, updateOrganizationSuccess, updateOrganizationFailure,
-  deleteOrganizationStart, deleteOrganizationSuccess, deleteOrganizationFailure
-} from '../../store/slices/organizationsSlice';
-import { getOrganizations, createOrganization, updateOrganization, deleteOrganization } from '../../api/mockApi';
+import { fetchOrganizations, createOrganization, updateOrganization } from '../../store/slices/organizationsSlice';
 import { useForm } from 'react-hook-form';
 
 const OrganizationsPage = () => {
   const dispatch = useDispatch();
   const { organizations, loading, error } = useSelector((state) => state.organizations);
   const [editOrg, setEditOrg] = useState(null);
-  const [showDelete, setShowDelete] = useState(null);
   const [toast, setToast] = useState(null);
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const { user } = useSelector(state => state.auth);
 
   useEffect(() => {
-    dispatch(fetchOrganizationsStart());
-    getOrganizations()
-      .then((res) => dispatch(fetchOrganizationsSuccess(res.data)))
-      .catch(() => dispatch(fetchOrganizationsFailure('Failed to load organizations')));
-  }, [dispatch]);
+    if (user?.tenant_id) {
+      dispatch(fetchOrganizations(user.tenant_id));
+    }
+  }, [dispatch, user]);
 
   useEffect(() => {
     if (toast) {
@@ -47,65 +40,23 @@ const OrganizationsPage = () => {
   }, [editOrg, setValue, reset]);
 
   const onSubmit = async (data) => {
-    if (editOrg) {
-      dispatch(updateOrganizationStart());
-      updateOrganization(editOrg.id, data)
-        .then((res) => {
-          if (res.success) {
-            dispatch(updateOrganizationSuccess(res.data));
-            setToast('Organization updated!');
-            setEditOrg(null);
-          } else {
-            dispatch(updateOrganizationFailure(res.error));
-            setToast(res.error || 'Update failed');
-          }
-        })
-        .catch(() => {
-          dispatch(updateOrganizationFailure('Update failed'));
-          setToast('Update failed');
-        });
-    } else {
-      dispatch(createOrganizationStart());
-      createOrganization(data)
-        .then((res) => {
-          if (res.success) {
-            dispatch(createOrganizationSuccess(res.data));
-            setToast('Organization created!');
-            reset();
-          } else {
-            dispatch(createOrganizationFailure(res.error));
-            setToast(res.error || 'Create failed');
-          }
-        })
-        .catch(() => {
-          dispatch(createOrganizationFailure('Create failed'));
-          setToast('Create failed');
-        });
+    try {
+      if (editOrg) {
+        await dispatch(updateOrganization({ id: editOrg.id, data })).unwrap();
+        setToast('Organization updated!');
+        setEditOrg(null);
+      } else {
+        await dispatch(createOrganization(data)).unwrap();
+        setToast('Organization created!');
+        reset();
+      }
+    } catch (err) {
+      setToast(err || 'Operation failed');
     }
   };
 
   const handleEdit = (org) => setEditOrg(org);
-  const handleDelete = (org) => setShowDelete(org);
-  const confirmDelete = () => {
-    if (!showDelete) return;
-    dispatch(deleteOrganizationStart());
-    deleteOrganization(showDelete.id)
-      .then((res) => {
-        if (res.success) {
-          dispatch(deleteOrganizationSuccess(res.data));
-          setToast('Organization deleted!');
-        } else {
-          dispatch(deleteOrganizationFailure(res.error));
-          setToast(res.error || 'Delete failed');
-        }
-        setShowDelete(null);
-      })
-      .catch(() => {
-        dispatch(deleteOrganizationFailure('Delete failed'));
-        setToast('Delete failed');
-        setShowDelete(null);
-      });
-  };
+  // Delete logic can be added if you have a deleteOrganization thunk
 
   return (
     <div className="organizations-page">
@@ -118,7 +69,6 @@ const OrganizationsPage = () => {
           <li key={org.id}>
             {org.name} ({org.email})
             <button onClick={() => handleEdit(org)} style={{marginLeft: 8}}>Edit</button>
-            <button onClick={() => handleDelete(org)} style={{marginLeft: 4, color: 'red'}}>Delete</button>
           </li>
         ))}
       </ul>
@@ -139,15 +89,6 @@ const OrganizationsPage = () => {
         </button>
         {editOrg && <button type="button" onClick={() => setEditOrg(null)} style={{marginLeft: 4}}>Cancel</button>}
       </form>
-      {showDelete && (
-        <div className="modal">
-          <div className="modal-content">
-            <p>Are you sure you want to delete {showDelete.name}?</p>
-            <button onClick={confirmDelete} style={{color: 'red'}}>Delete</button>
-            <button onClick={() => setShowDelete(null)} style={{marginLeft: 4}}>Cancel</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
