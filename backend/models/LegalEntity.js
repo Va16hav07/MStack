@@ -1,23 +1,26 @@
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
-const legalEntitySchema = new mongoose.Schema({
-  id: {
-    type: String,
-    default: uuidv4,
-    unique: true,
-  },
-  name: { type: String, required: true },
-  legal_name: { type: String, required: true },
-  legal_entity_type: { type: String, enum: ['PARENT_ENTITY', 'SUB_ENTITY'], required: true },
-  address: { type: String },
-  incorporation_date: { type: Date },
-  is_default: { type: Boolean, default: false },
-  registration_number: { type: String },
-  tax_identifier: { type: String },
-  jurisdiction_country: { type: String },
-  functional_currency: { type: String },
+const LegalEntitySchema = new mongoose.Schema({
+  id: { type: String, unique: true, required: true, default: uuidv4 },
   tenant_id: { type: String, required: true },
-}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+  name: { type: String, required: true },
+  legal_name: String,
+  legal_entity_type: String,
+  address: String,
+  incorporation_date: Date,
+  is_default: Boolean,
+  registration_number: String,
+  tax_identifier: String,
+  jurisdiction_country: String,
+  functional_currency: String,
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
+});
 
-module.exports = mongoose.model('LegalEntity', legalEntitySchema);
+LegalEntitySchema.pre('save', function(next) {
+  if (!this.id) this.id = uuidv4();
+  next();
+});
+
+module.exports = mongoose.model('LegalEntity', LegalEntitySchema);

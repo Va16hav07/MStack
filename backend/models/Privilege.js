@@ -1,17 +1,20 @@
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
-const privilegeSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    default: uuidv4,
-    unique: true,
-  },
+const PrivilegeSchema = new mongoose.Schema({
+  id: { type: String, unique: true, required: true, default: uuidv4 },
   name: { type: String, required: true },
-  description: { type: String },
-  active: { type: Boolean, default: true },
-  resource: { type: String, required: true },
+  description: String,
+  resource: String,
   tenant_id: { type: String, required: true },
-}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+  active: { type: Boolean, default: true },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
+});
 
-module.exports = mongoose.model('Privilege', privilegeSchema); 
+PrivilegeSchema.pre('save', function(next) {
+  if (!this.id) this.id = uuidv4();
+  next();
+});
+
+module.exports = mongoose.model('Privilege', PrivilegeSchema); 

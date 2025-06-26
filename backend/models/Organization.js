@@ -2,11 +2,7 @@ const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
 const organizationSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    default: uuidv4,
-    unique: true,
-  },
+  id: { type: String, unique: true, required: true, default: uuidv4 },
   tenant_id: { type: String, required: true },
   name: { type: String, required: true },
   description: { type: String },
@@ -20,6 +16,13 @@ const organizationSchema = new mongoose.Schema({
   employee_count: { type: Number, default: 0 },
   active: { type: Boolean, default: true },
   organization_profile: { type: String },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+
+organizationSchema.pre('save', function(next) {
+  if (!this.id) this.id = uuidv4();
+  next();
+});
 
 module.exports = mongoose.model('Organization', organizationSchema); 

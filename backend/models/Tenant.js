@@ -4,8 +4,9 @@ const { v4: uuidv4 } = require('uuid');
 const tenantSchema = new mongoose.Schema({
   id: {
     type: String,
-    default: uuidv4,
     unique: true,
+    required: true,
+    default: uuidv4,
   },
   name: { type: String, required: true },
   description: { type: String },
@@ -33,6 +34,13 @@ const tenantSchema = new mongoose.Schema({
     type: String,
     default: 'UTC',
   },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+
+tenantSchema.pre('save', function(next) {
+  if (!this.id) this.id = uuidv4();
+  next();
+});
 
 module.exports = mongoose.model('Tenant', tenantSchema); 
