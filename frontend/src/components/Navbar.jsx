@@ -53,9 +53,9 @@ const Navbar = () => {
         
         <div className="navbar__brand">
           <div className="navbar__brand-icon">
-            <span>M</span>
+            <span>UMS</span>
           </div>
-          <span>MStack</span>
+          <span>User Management</span>
         </div>
       </div>
       

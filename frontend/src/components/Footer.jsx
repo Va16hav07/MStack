@@ -11,7 +11,7 @@ const Footer = () => {
             <span className="text-sm font-bold text-white">M</span>
           </div>
           <p className="text-sm text-gray-600">
-            © {currentYear} MStack Management System. All rights reserved.
+            © {currentYear} User Management System. All rights reserved.
           </p>
         </div>
         <div className="flex items-center space-x-6">

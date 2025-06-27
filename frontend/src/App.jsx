@@ -35,7 +35,7 @@ function App() {
             <div className="absolute -inset-4 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl opacity-20 animate-ping"></div>
           </div>
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">MStack</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">User Management</h2>
             <p className="text-gray-600 mb-6">Loading your workspace...</p>
           </div>
           <div className="relative">
