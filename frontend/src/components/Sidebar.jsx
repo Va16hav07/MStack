@@ -77,9 +77,9 @@ const Sidebar = () => {
       <div className="sidebar-header">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">
-            <span>M</span>
+            <span>UMS</span>
           </div>
-          <span className="sidebar-brand-text">MStack</span>
+          <span className="sidebar-brand-text">USM</span>
         </div>
         <p className="text-sm text-gray-500 mt-2">Multi-tenant Management System</p>
       </div>
